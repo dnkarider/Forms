@@ -12,10 +12,10 @@ public class Main {
     public static void main(String[] args) {
         Server server = new Server();
         server.addHandler("GET", "/classic.html", ((Request request, BufferedOutputStream out) -> {
-            final Path filePath = Path.of(".", "public", request.getPath());
-            final String mimeType = Files.probeContentType(filePath);
+            final Path filePath = Path.of(".", "public", request.getPath());//путь к файлу
+            final String mimeType = Files.probeContentType(filePath);//определяем тип файла
 
-            final String template = Files.readString(filePath);
+            final String template = Files.readString(filePath);//прочитали файл
             final byte[] content = template.replace(
                     "{time}",
                     LocalDateTime.now().toString()

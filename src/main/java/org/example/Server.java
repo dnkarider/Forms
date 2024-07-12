@@ -1,8 +1,12 @@
 package org.example;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,6 +85,9 @@ public class Server {
             badRequest(out);
             socket.close();
         }
+        final String protocol = requestLine[2];
+        final List<NameValuePair> nameValuePairs = parsePath(path);
+
         final byte[] headersDelimiter = new byte[]{'\r', '\n', '\r', '\n'};
         final int headersStart = requestLineEnd + requestLineDelimiter.length;
         final int headersEnd = indexOf(buffer, headersDelimiter, headersStart, read);
@@ -104,7 +111,7 @@ public class Server {
                 body = new String(bodyBytes);
             }
         }
-        return new Request(method, path, headers, body);
+        return new Request(method, path, headers, body, nameValuePairs, protocol);
     }
     private int indexOf(byte[] array, byte[] target, int start, int max) {
         outer:
@@ -144,5 +151,18 @@ public class Server {
                         "\r\n"
         ).getBytes());
         out.flush();
+    }
+    public List<NameValuePair> parsePath(String path){
+        for(int i = 0; i <= path.length(); i++){
+            if(i + 1 < path.length() && i + 2 < path.length() && path.charAt(i) == '/'){
+                ++i;
+                if(path.charAt(i) == '?'){
+                    String correctForParsingPath = path.substring(i + 1);
+                    List<NameValuePair> newExperimentalList = URLEncodedUtils.parse(correctForParsingPath, Charset.defaultCharset());
+                    return newExperimentalList;
+                }
+            }
+        }
+        return new ArrayList<NameValuePair>();
     }
 }
